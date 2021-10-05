@@ -6,5 +6,5 @@ export class Config {
   static twilioSecret: string = config().TWILIO_SECRET;
   static twilioSendNumber: string = config().TWILIO_NUMBER;
   static twilioAuthToken: string = config().TWILIO_AUTH_TOKEN;
-  static notifyingNumber: string = config().NOTIFYING_NUMBER;
+  static notifyingNumbers: string = config().NOTIFYING_NUMBERS;
 }
