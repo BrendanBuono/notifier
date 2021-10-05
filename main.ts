@@ -1,12 +1,21 @@
-import { notify } from "https://deno.land/x/notifier/mod.ts";
 import { sleep } from "https://deno.land/x/sleep/mod.ts";
 import {
   BestBuyStockChecker,
   MicrosoftStockChecker,
   StockChecker,
 } from "./StockChecker.ts";
+
 import { Config } from "./config.ts";
-import { Twilio } from "https://deno.land/x/twilio@0.1.1/Twilio.ts";
+
+import {
+  DesktopNotifier,
+  NotificationEngine,
+  NotificationMapping,
+  NotificationType,
+  Notifier,
+  SmsNotifier,
+} from "./notificationEngine.ts";
+
 const stockCheckers: StockChecker[] = [
   new MicrosoftStockChecker(),
   new BestBuyStockChecker(),
@@ -15,12 +24,16 @@ const stockCheckers: StockChecker[] = [
 const minWaitTime = 15;
 const maxWaitDelta = 65;
 
-const sender = new Twilio(
-  Config.twilioAccountSid,
-  Config.twilioAuthToken,
-  Config.twilioSid,
-  Config.twilioSendNumber,
-);
+const numbersToNotify = Config.notifyingNumbers.split(",");
+const smsNotifier = new SmsNotifier(numbersToNotify);
+const notifationMapper: NotificationMapping = {
+  "0": [
+    smsNotifier,
+    new DesktopNotifier(),
+  ],
+};
+
+const notificationEngine = new NotificationEngine(notifationMapper);
 
 while (true) {
   console.log("checking stock");
@@ -29,13 +42,10 @@ while (true) {
     const checker = stockCheckers[i];
     console.log(`Checking stock for ${checker.siteName}`);
     if (await checker.checkStock()) {
-      await notify(
-        checker.siteName,
-        checker.notitifcationText,
-      );
-      await sender.sendMessage(
-        Config.notifyingNumber,
-        `Xbox Series X available from ${checker.siteName} at ${checker.url}`,
+      await notificationEngine.notify(
+        NotificationType.XSX,
+        `Xbox Series X available at ${checker.siteName}`,
+        `URL: ${checker.url}`,
       );
     }
   }
