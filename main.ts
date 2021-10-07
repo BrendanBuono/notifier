@@ -1,3 +1,4 @@
+import { format } from "https://deno.land/std@0.91.0/datetime/mod.ts";
 import { sleep } from "https://deno.land/x/sleep/mod.ts";
 import {
   BestBuyStockChecker,
@@ -8,11 +9,9 @@ import {
 import { Config } from "./config.ts";
 
 import {
-  DesktopNotifier,
   NotificationEngine,
   NotificationMapping,
   NotificationType,
-  Notifier,
   SmsNotifier,
 } from "./notificationEngine.ts";
 
@@ -29,14 +28,13 @@ const smsNotifier = new SmsNotifier(numbersToNotify);
 const notifationMapper: NotificationMapping = {
   "0": [
     smsNotifier,
-    new DesktopNotifier(),
   ],
 };
 
 const notificationEngine = new NotificationEngine(notifationMapper);
 
 while (true) {
-  console.log("checking stock");
+  console.log(`checking stock at ${format(new Date(), "yyyy-MM-dd HH:mm:ss")}`);
 
   for (let i = 0; i < stockCheckers.length; i++) {
     const checker = stockCheckers[i];
